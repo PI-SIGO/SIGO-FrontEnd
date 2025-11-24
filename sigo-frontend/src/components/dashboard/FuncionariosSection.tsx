@@ -1,0 +1,299 @@
+"use client";
+
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { DataTable } from "@/components/ui/DataTable";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { situacaoOptions } from "@/lib/constants";
+import { Funcionario } from "@/types/entities";
+import {
+  createFuncionario,
+  deleteFuncionario,
+  listFuncionarios,
+  updateFuncionario,
+} from "@/services/funcionarios";
+
+interface FormState {
+  Nome: string;
+  Cpf: string;
+  Cargo: string;
+  Email: string;
+  Situacao: string;
+}
+
+const initialForm: FormState = {
+  Nome: "",
+  Cpf: "",
+  Cargo: "",
+  Email: "",
+  Situacao: "1",
+};
+
+export function FuncionariosSection() {
+  const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
+  const [form, setForm] = useState<FormState>(initialForm);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  async function refresh() {
+    try {
+      setLoading(true);
+      const data = await listFuncionarios();
+      setFuncionarios(data);
+    } catch (error) {
+      console.error(error);
+      setFeedback("Não foi possível carregar os colaboradores.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function resetForm() {
+    setForm(initialForm);
+    setEditingId(null);
+  }
+
+  function populateForm(funcionario: Funcionario) {
+    setEditingId(funcionario.Id);
+    setForm({
+      Nome: funcionario.Nome ?? "",
+      Cpf: funcionario.Cpf ?? "",
+      Cargo: funcionario.Cargo ?? "",
+      Email: funcionario.Email ?? "",
+      Situacao: String(funcionario.Situacao ?? 1),
+    });
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitting(true);
+    setFeedback(null);
+
+    const payload: Partial<Funcionario> = {
+      Nome: form.Nome,
+      Cpf: form.Cpf,
+      Cargo: form.Cargo,
+      Email: form.Email,
+      Situacao: Number(form.Situacao),
+    };
+
+    try {
+      if (editingId) {
+        await updateFuncionario(editingId, payload);
+        setFeedback("Colaborador atualizado com sucesso.");
+      } else {
+        await createFuncionario(payload);
+        setFeedback("Colaborador cadastrado com sucesso.");
+      }
+      await refresh();
+      resetForm();
+    } catch (error) {
+      console.error(error);
+      setFeedback("Não foi possível salvar o colaborador.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleDelete(funcionario: Funcionario) {
+    if (!window.confirm(`Remover ${funcionario.Nome}?`)) {
+      return;
+    }
+    try {
+      await deleteFuncionario(funcionario.Id);
+      setFeedback("Colaborador removido.");
+      await refresh();
+    } catch (error) {
+      console.error(error);
+      setFeedback("Não foi possível remover o colaborador.");
+    }
+  }
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) {
+      return funcionarios;
+    }
+    const term = search.toLowerCase();
+    return funcionarios.filter((item) =>
+      [item.Nome, item.Email, item.Cargo]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(term))
+    );
+  }, [funcionarios, search]);
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Equipe"
+        description="Gerencie dados dos colaboradores, cargos e situação."
+        actionSlot={
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Buscar por nome ou cargo"
+            className="w-64 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+          />
+        }
+      />
+
+      {feedback && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          {feedback}
+        </div>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <DataTable
+          data={filtered}
+          columns={[
+            { header: "Nome", key: "Nome" },
+            { header: "Cargo", key: "Cargo" },
+            { header: "E-mail", key: "Email" },
+            { header: "CPF", key: "Cpf", width: "140px" },
+            {
+              header: "Situação",
+              key: "Situacao",
+              render: (item) => (
+                <span
+                  className={`badge ${
+                    item.Situacao === 1 ? "badge-success" : "badge-warning"
+                  }`}
+                >
+                  {
+                    situacaoOptions.find((option) => option.value === item.Situacao)
+                      ?.label
+                  }
+                </span>
+              ),
+            },
+            {
+              header: "Ações",
+              key: "Id",
+              render: (item) => (
+                <div className="flex gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => populateForm(item)}
+                    className="rounded-lg border border-emerald-200 px-3 py-1 font-medium text-emerald-600 hover:bg-emerald-50"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(item)}
+                    className="rounded-lg border border-rose-200 px-3 py-1 font-medium text-rose-600 hover:bg-rose-50"
+                  >
+                    Remover
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+          emptyMessage={
+            loading ? "Carregando equipe..." : "Nenhum colaborador cadastrado"
+          }
+          getRowId={(item) => item.Id}
+        />
+
+        <aside className="app-card">
+          <header className="mb-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
+              {editingId ? "Editar colaborador" : "Novo colaborador"}
+            </p>
+            <h3 className="mt-2 text-lg font-semibold text-slate-900">
+              {editingId ? "Atualize as informações" : "Preencha os dados"}
+            </h3>
+          </header>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                Nome
+              </label>
+              <input
+                required
+                value={form.Nome}
+                onChange={(event) => setForm((prev) => ({ ...prev, Nome: event.target.value }))}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                CPF
+              </label>
+              <input
+                required
+                value={form.Cpf}
+                onChange={(event) => setForm((prev) => ({ ...prev, Cpf: event.target.value }))}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                Cargo
+              </label>
+              <input
+                required
+                value={form.Cargo}
+                onChange={(event) => setForm((prev) => ({ ...prev, Cargo: event.target.value }))}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                E-mail
+              </label>
+              <input
+                required
+                type="email"
+                value={form.Email}
+                onChange={(event) => setForm((prev) => ({ ...prev, Email: event.target.value }))}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
+                Situação
+              </label>
+              <select
+                value={form.Situacao}
+                onChange={(event) => setForm((prev) => ({ ...prev, Situacao: event.target.value }))}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+              >
+                {situacaoOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {submitting ? "Salvando..." : editingId ? "Atualizar" : "Cadastrar"}
+              </button>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100"
+                >
+                  Cancelar
+                </button>
+              )}
+            </div>
+          </form>
+        </aside>
+      </div>
+    </div>
+  );
+}

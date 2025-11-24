@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f3f6ff;
+  --foreground: #0f172a;
+  --accent: #2563eb;
+  --accent-soft: #e0e7ff;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.app-card {
+  @apply rounded-xl border border-blue-100 bg-white p-6 shadow-sm transition hover:shadow-lg hover:shadow-blue-100/70;
+}
+
+.data-table {
+  @apply w-full border-collapse text-left text-sm;
+}
+
+.data-table thead {
+  @apply bg-blue-50 text-xs uppercase tracking-wide text-blue-600;
+}
+
+.data-table th,
+.data-table td {
+  @apply border-b border-blue-100 px-4 py-3 align-middle;
+}
+
+.badge {
+  @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.badge-warning {
+  @apply bg-amber-100 text-amber-700;
+}
+
+.badge-danger {
+  @apply bg-rose-100 text-rose-700;
+}
+
+.text-emerald-500 {
+  color: #2563eb !important;
+}
+
+.text-emerald-600 {
+  color: #1d4ed8 !important;
+}
+
+.text-emerald-700 {
+  color: #1e3a8a !important;
+}
+
+.text-emerald-300 {
+  color: #bfdbfe !important;
+}
+
+.text-emerald-200 {
+  color: #dbeafe !important;
+}
+
+.bg-emerald-50 {
+  background-color: #eff6ff !important;
+}
+
+.bg-emerald-100 {
+  background-color: #dbeafe !important;
+}
+
+.bg-emerald-500 {
+  background-color: #2563eb !important;
+}
+
+.bg-emerald-600 {
+  background-color: #1d4ed8 !important;
+}
+
+.border-emerald-200 {
+  border-color: #bfdbfe !important;
+}
+
+.border-emerald-500 {
+  border-color: #2563eb !important;
+}
+
+.hover\:bg-emerald-50:hover {
+  background-color: #eff6ff !important;
+}
+
+.focus\:border-emerald-500:focus {
+  border-color: #2563eb !important;
+}
+
+.focus\:ring-emerald-200:focus {
+  --tw-ring-color: #bfdbfe !important;
+}
+
+.shadow-emerald-500\/25 {
+  box-shadow: 0 12px 32px -12px rgba(37, 99, 235, 0.25) !important;
+}
