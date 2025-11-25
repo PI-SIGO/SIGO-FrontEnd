@@ -23,6 +23,7 @@ export function CoresSection() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     refresh();
@@ -44,11 +45,19 @@ export function CoresSection() {
   function resetForm() {
     setForm(initialForm);
     setEditingId(null);
+    setShowModal(false);
+  }
+
+  function openModalForCreate() {
+    setEditingId(null);
+    setForm(initialForm);
+    setShowModal(true);
   }
 
   function populateForm(cor: Cor) {
     setEditingId(cor.Id);
     setForm({ NomeCor: cor.NomeCor ?? "" });
+    setShowModal(true);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -102,13 +111,22 @@ export function CoresSection() {
         title="Cores"
         description="Mantenha a base de cores disponível para os cadastros de veículos."
         actionSlot={
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar cor"
-            className="w-64 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-          />
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={openModalForCreate}
+              className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
+            >
+              Nova cor
+            </button>
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar cor"
+              className="w-64 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            />
+          </div>
         }
       />
 
@@ -118,7 +136,7 @@ export function CoresSection() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="grid gap-6">
         <DataTable
           data={filtered}
           columns={[
@@ -149,49 +167,37 @@ export function CoresSection() {
           emptyMessage={loading ? "Carregando cores..." : "Nenhuma cor cadastrada"}
           getRowId={(item) => item.Id}
         />
-
-        <aside className="app-card">
-          <header className="mb-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500">
-              {editingId ? "Editar cor" : "Nova cor"}
-            </p>
-            <h3 className="mt-2 text-lg font-semibold text-slate-900">
-              {editingId ? "Atualize o nome" : "Cadastre novas opções"}
-            </h3>
-          </header>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
-                Nome da cor
-              </label>
-              <input
-                required
-                value={form.NomeCor}
-                onChange={(event) => setForm({ NomeCor: event.target.value })}
-                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {submitting ? "Salvando..." : editingId ? "Atualizar" : "Cadastrar"}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100"
-                >
-                  Cancelar
-                </button>
-              )}
-            </div>
-          </form>
-        </aside>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowModal(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-xl bg-white shadow-lg flex flex-col max-h-[80vh]">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 flex-shrink-0">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-emerald-600">{editingId ? 'Editar' : 'Nova'} Cor</p>
+                <h3 className="mt-2 text-lg font-semibold text-slate-900">{editingId ? 'Atualize o nome' : 'Cadastre novas opções'}</h3>
+              </div>
+              <button type="button" onClick={() => setShowModal(false)} className="text-slate-500 hover:text-slate-700">Fechar</button>
+            </div>
+            <form id="cor-form" className="mt-0 space-y-4 px-6 py-4 overflow-y-auto" onSubmit={handleSubmit}>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">Nome da cor</label>
+                <input
+                  required
+                  value={form.NomeCor}
+                  onChange={(event) => setForm({ NomeCor: event.target.value })}
+                  className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-2 text-sm"
+                />
+              </div>
+            </form>
+            <div className="flex items-center gap-3 justify-end border-t border-slate-200 px-6 py-4 flex-shrink-0">
+              <button type="button" onClick={() => setShowModal(false)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm">Cancelar</button>
+              <button type="submit" form="cor-form" disabled={submitting} className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60">{submitting ? 'Salvando...' : editingId ? 'Atualizar' : 'Cadastrar'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
