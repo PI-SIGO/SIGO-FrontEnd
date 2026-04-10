@@ -39,7 +39,7 @@ export default function LandingPage() {
         </nav>
         <div className="flex gap-3">
           <Link
-            href="/login"
+            href="/cadastro"
             className="rounded-lg border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
           >
             Cadastrar-se

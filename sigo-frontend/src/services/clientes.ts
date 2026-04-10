@@ -3,7 +3,7 @@ import { buildBackendUrl } from "@/lib/config";
 import { apiFetch } from "./api-client";
 import { unwrapArray, unwrapData } from "./service-utils";
 
-const BASE_URL = buildBackendUrl("Cliente");
+const BASE_URL = buildBackendUrl("clientes");
 
 type RawCliente = Partial<Cliente> & {
   id?: number;
@@ -60,7 +60,7 @@ export async function listClientes(): Promise<Cliente[]> {
 }
 
 export async function getCliente(id: number): Promise<Cliente | null> {
-  const payload = await apiFetch(`${BASE_URL}/id/${id}`);
+  const payload = await apiFetch(`${BASE_URL}/${id}`);
   const cliente = unwrapData<RawCliente>(payload);
   return cliente ? normalizeCliente(cliente) : null;
 }
@@ -91,6 +91,6 @@ export async function deleteCliente(id: number): Promise<ApiResponse<null>> {
 }
 
 export async function searchClienteByNome(nome: string): Promise<Cliente[]> {
-  const payload = await apiFetch(`${BASE_URL}/name/${encodeURIComponent(nome)}`);
+  const payload = await apiFetch(`${BASE_URL}/nome/${encodeURIComponent(nome)}`);
   return unwrapArray<RawCliente>(payload).map(normalizeCliente);
 }
