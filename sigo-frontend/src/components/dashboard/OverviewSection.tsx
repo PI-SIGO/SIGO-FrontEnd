@@ -37,7 +37,7 @@ function resolveSituacao(value: number) {
   return situacaoOptions.find((item) => item.value === value)?.label ?? "-";
 }
 
-function resolveStatusVeiculo(value: number) {
+function resolveStatusVeiculo(value?: number | null) {
   return statusVeiculoOptions.find((item) => item.value === value)?.label ?? "-";
 }
 

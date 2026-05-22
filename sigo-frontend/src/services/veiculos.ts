@@ -3,7 +3,7 @@ import { buildBackendUrl } from "@/lib/config";
 import { apiFetch } from "./api-client";
 import { unwrapArray } from "./service-utils";
 
-const BASE_URL = buildBackendUrl("Veiculo");
+const BASE_URL = buildBackendUrl("veiculos");
 
 type RawVeiculo = Partial<Veiculo> & {
   id?: number;

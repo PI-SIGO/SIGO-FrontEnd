@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { sexoOptions, tipoClienteOptions } from "@/lib/constants";
 import { ApiError } from "@/services/api-client";
+import { extractApiMessage } from "@/services/errors";
 import { createCliente } from "@/services/clientes";
 import { Cliente } from "@/types/entities";
 
@@ -57,10 +58,9 @@ function createInitialFormState(): CadastroFormState {
 
 function getErrorMessage(error: unknown) {
   if (error instanceof ApiError) {
-    const apiMessage =
-      error.response?.Message ?? error.response?.message ?? error.response?.title;
+    const apiMessage = extractApiMessage(error.response);
 
-    if (typeof apiMessage === "string" && apiMessage.trim()) {
+    if (apiMessage) {
       return apiMessage;
     }
 

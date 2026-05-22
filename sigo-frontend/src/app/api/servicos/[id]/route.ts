@@ -1,23 +1,26 @@
 import { forwardToBackend } from "../../helpers";
 
-type Params = {
-  params: { id: string };
+type RouteContext = {
+  params: Promise<{ id: string }>;
 };
 
-export async function GET(_: Request, { params }: Params) {
-  return forwardToBackend(`Servico/GetServicoById${params.id}`);
+export async function GET(_: Request, { params }: RouteContext) {
+  const { id } = await params;
+  return forwardToBackend(`servicos/${id}`);
 }
 
-export async function PUT(request: Request, { params }: Params) {
+export async function PUT(request: Request, { params }: RouteContext) {
+  const { id } = await params;
   const body = await request.json();
-  return forwardToBackend(`Servico/PutServico${params.id}`, {
+  return forwardToBackend(`servicos/${id}`, {
     method: "PUT",
     body,
   });
 }
 
-export async function DELETE(_: Request, { params }: Params) {
-  return forwardToBackend(`Servico/DeleteServico${params.id}`, {
+export async function DELETE(_: Request, { params }: RouteContext) {
+  const { id } = await params;
+  return forwardToBackend(`servicos/${id}`, {
     method: "DELETE",
   });
 }

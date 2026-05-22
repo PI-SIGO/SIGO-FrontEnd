@@ -1,9 +1,10 @@
 import { forwardToBackend } from "../../../helpers";
 
-type Params = {
-  params: { tipo: string };
+type RouteContext = {
+  params: Promise<{ tipo: string }>;
 };
 
-export async function GET(_: Request, { params }: Params) {
-  return forwardToBackend(`Veiculo/tipo/${params.tipo}`);
+export async function GET(_: Request, { params }: RouteContext) {
+  const { tipo } = await params;
+  return forwardToBackend(`veiculos/tipo/${tipo}`);
 }

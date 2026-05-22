@@ -3,7 +3,7 @@ import { buildBackendUrl } from "@/lib/config";
 import { apiFetch } from "./api-client";
 import { unwrapArray, unwrapData } from "./service-utils";
 
-const BASE_URL = buildBackendUrl("Servico");
+const BASE_URL = buildBackendUrl("servicos");
 
 type RawServico = Partial<Servico> & {
   id?: number;
@@ -29,7 +29,7 @@ export async function listServicos(): Promise<Servico[]> {
 }
 
 export async function getServico(id: number): Promise<Servico | null> {
-  const payload = await apiFetch(`${BASE_URL}/id/${id}`);
+  const payload = await apiFetch(`${BASE_URL}/${id}`);
   const servico = unwrapData<RawServico>(payload);
   return servico ? normalizeServico(servico) : null;
 }
@@ -60,6 +60,6 @@ export async function deleteServico(id: number): Promise<ApiResponse<null>> {
 }
 
 export async function searchServicoByNome(nome: string): Promise<Servico[]> {
-  const payload = await apiFetch(`${BASE_URL}/name/${encodeURIComponent(nome)}`);
+  const payload = await apiFetch(`${BASE_URL}/nome/${encodeURIComponent(nome)}`);
   return unwrapArray<RawServico>(payload).map(normalizeServico);
 }
