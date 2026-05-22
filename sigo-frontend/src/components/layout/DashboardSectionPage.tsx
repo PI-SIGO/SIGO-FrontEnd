@@ -1,5 +1,3 @@
-"use client";
-
 import { redirect } from "next/navigation";
 
 interface DashboardSectionPageProps {
@@ -20,5 +18,5 @@ const sectionRouteMap: Record<string, string> = {
 export function DashboardSectionPage({
   sectionId,
 }: DashboardSectionPageProps) {
-  redirect(sectionRouteMap[sectionId] ?? "/visao-geral");
+  return redirect(sectionRouteMap[sectionId] ?? "/visao-geral");
 }

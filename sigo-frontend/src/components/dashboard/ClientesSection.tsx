@@ -5,6 +5,7 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { DataTable } from "@/components/ui/DataTable";
 import { situacaoOptions, sexoOptions, tipoClienteOptions } from "@/lib/constants";
 import { ApiError } from "@/services/api-client";
+import { extractApiMessage } from "@/services/errors";
 import { createCliente, deleteCliente, getCliente, listClientes, updateCliente } from "@/services/clientes";
 import { Cliente } from "@/types/entities";
 
@@ -56,12 +57,9 @@ function toClienteForm(cliente: Cliente): ClienteForm {
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof ApiError) {
-    const apiMessage =
-      error.response?.Message ??
-      error.response?.message ??
-      error.response?.title;
+    const apiMessage = extractApiMessage(error.response);
 
-    if (typeof apiMessage === "string" && apiMessage.trim()) {
+    if (apiMessage) {
       return apiMessage;
     }
 

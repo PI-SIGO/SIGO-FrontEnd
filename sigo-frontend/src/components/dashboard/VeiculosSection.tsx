@@ -5,6 +5,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { statusVeiculoOptions } from "@/lib/constants";
 import { ApiError } from "@/services/api-client";
+import { extractApiMessage } from "@/services/errors";
 import { Cliente, Veiculo } from "@/types/entities";
 import { listClientes } from "@/services/clientes";
 import {
@@ -50,12 +51,9 @@ function resolveStatus(value: number) {
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof ApiError) {
-    const apiMessage =
-      error.response?.Message ??
-      error.response?.message ??
-      error.response?.title;
+    const apiMessage = extractApiMessage(error.response);
 
-    if (typeof apiMessage === "string" && apiMessage.trim()) {
+    if (apiMessage) {
       return apiMessage;
     }
 
@@ -205,8 +203,13 @@ export function VeiculosSection() {
     }
   }
 
+  const clientesById = useMemo(
+    () => new Map(clientes.map((cliente) => [cliente.Id, cliente.Nome])),
+    [clientes]
+  );
+
   function getClienteNome(clienteId: number) {
-    return clientes.find((cliente) => cliente.Id === clienteId)?.Nome ?? `#${clienteId}`;
+    return clientesById.get(clienteId) ?? `#${clienteId}`;
   }
 
   const filtered = useMemo(() => {
@@ -222,12 +225,12 @@ export function VeiculosSection() {
         item.TipoVeiculo,
         item.PlacaVeiculo,
         item.Cor,
-        getClienteNome(item.ClienteId),
+        clientesById.get(item.ClienteId) ?? `#${item.ClienteId}`,
       ]
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(term))
     );
-  }, [veiculos, search, clientes]);
+  }, [veiculos, search, clientesById]);
 
   return (
     <div className="space-y-6">

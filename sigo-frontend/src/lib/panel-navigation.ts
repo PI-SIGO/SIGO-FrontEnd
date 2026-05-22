@@ -17,8 +17,11 @@ const visibleSectionIds = new Set([
   "marcas",
 ]);
 
-export const panelNavigation: PanelNavItem[] = appSections
-  .filter((section) => visibleSectionIds.has(section.id))
+const visiblePanelSections = appSections.filter((section) =>
+  visibleSectionIds.has(section.id)
+);
+
+export const panelNavigation: PanelNavItem[] = visiblePanelSections
   .map((section) => ({
     href: section.href,
     label: section.label,

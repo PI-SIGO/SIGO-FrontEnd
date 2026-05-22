@@ -3,7 +3,7 @@ import { buildBackendUrl } from "@/lib/config";
 import { apiFetch } from "./api-client";
 import { unwrapArray, unwrapData } from "./service-utils";
 
-const BASE_URL = buildBackendUrl("Marca");
+const BASE_URL = buildBackendUrl("marcas");
 
 type RawMarca = Partial<Marca> & {
   id?: number;
@@ -27,7 +27,7 @@ export async function listMarcas(): Promise<Marca[]> {
 }
 
 export async function getMarca(id: number): Promise<Marca | null> {
-  const payload = await apiFetch(`${BASE_URL}/id/${id}`);
+  const payload = await apiFetch(`${BASE_URL}/${id}`);
   const marca = unwrapData<RawMarca>(payload);
   return marca ? normalizeMarca(marca) : null;
 }
@@ -58,6 +58,6 @@ export async function deleteMarca(id: number): Promise<ApiResponse<null>> {
 }
 
 export async function searchMarcaByNome(nome: string): Promise<Marca[]> {
-  const payload = await apiFetch(`${BASE_URL}/name/${encodeURIComponent(nome)}`);
+  const payload = await apiFetch(`${BASE_URL}/nome/${encodeURIComponent(nome)}`);
   return unwrapArray<RawMarca>(payload).map(normalizeMarca);
 }

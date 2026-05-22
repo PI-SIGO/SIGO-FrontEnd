@@ -3,13 +3,16 @@ export interface ApiResponse<T> {
   Code?: number;
   message?: string | null;
   Message?: string | null;
-  data: T;
+  data?: T;
+  Data?: T;
 }
+
+export type UserRole = "Admin" | "Funcionario" | "Oficina" | "Cliente";
 
 export interface Telefone {
   Id: number;
   Numero: string;
-  DDD?: number;
+  DDD?: number | string;
   ClienteId?: number;
 }
 
@@ -45,6 +48,13 @@ export interface Funcionario {
   Senha?: string;
   Email: string;
   Situacao: number;
+  IdOficina?: number | null;
+  Role?: UserRole | string;
+}
+
+export interface FuncionarioServico {
+  IdFuncionario: number;
+  IdServico: number;
 }
 
 export interface Servico {
@@ -53,6 +63,8 @@ export interface Servico {
   Descricao: string;
   Valor: number;
   Garantia: string;
+  IdOficina?: number | null;
+  Funcionario_Servicos?: FuncionarioServico[] | null;
 }
 
 export interface Marca {
@@ -60,6 +72,17 @@ export interface Marca {
   Nome: string;
   Desc?: string;
   TipoMarca?: string;
+}
+
+export interface Cor {
+  Id: number;
+  NomeCor: string;
+}
+
+export interface VeiculoImagem {
+  Id: number;
+  NomeArquivo: string;
+  ContentType?: string;
 }
 
 export interface Veiculo {
@@ -75,8 +98,62 @@ export interface Veiculo {
   Cor?: string;
   ClienteId: number;
   CorId?: number;
-  Status: number;
+  Status?: number;
   Situacao?: number;
+  Imagens?: VeiculoImagem[] | null;
+}
+
+export interface PedidoServico {
+  IdPedido: number;
+  IdServico: number;
+  QuantVezes: number;
+}
+
+export interface PedidoPeca {
+  IdPedido: number;
+  IdPeca: number;
+  Quantidade: number;
+  DataInstalacao: string;
+  Estado: string;
+  Observacao: string;
+}
+
+export interface Pedido {
+  Id: number;
+  idCliente: number;
+  idFuncionario: number;
+  idOficina: number;
+  idVeiculo: number;
+  ValorTotal: number;
+  DescontoReais: number;
+  DescontoPorcentagem: number;
+  DescontoTotalReais: number;
+  DescontoServicoPorcentagem: number;
+  DescontoServicoReais: number;
+  DescontoPecaPorcentagem: number;
+  descontoPecaReais: number;
+  Observacao: string;
+  DataInicio: string;
+  DataFim: string;
+  Pedido_Pecas: PedidoPeca[];
+  Pedido_Servicos: PedidoServico[];
+}
+
+export interface Relatorio {
+  veiculoId: number;
+  fileName: string;
+  contentType: string;
+  blob: Blob;
+}
+
+export interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  oficinaId?: number | null;
+  exp?: number | null;
+  token?: string;
 }
 
 export type SituacaoStatus = 1 | 2;

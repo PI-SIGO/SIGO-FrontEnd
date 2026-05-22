@@ -1,6 +1,12 @@
 export function unwrapData<T>(payload: unknown): T | null {
-  if (payload && typeof payload === "object" && "data" in payload) {
-    return (payload as { data?: T | null }).data ?? null;
+  if (payload && typeof payload === "object") {
+    if ("data" in payload) {
+      return (payload as { data?: T | null }).data ?? null;
+    }
+
+    if ("Data" in payload) {
+      return (payload as { Data?: T | null }).Data ?? null;
+    }
   }
 
   return (payload as T) ?? null;

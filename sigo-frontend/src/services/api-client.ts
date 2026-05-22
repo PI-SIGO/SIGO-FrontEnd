@@ -1,52 +1,70 @@
-export class ApiError extends Error {
-  status: number;
-  response: any;
+import { clearToken, getToken } from "./auth";
+import { ApiError, extractApiMessage } from "./errors";
 
-  constructor(message: string, status: number, response: any) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.response = response;
-  }
-}
+export { ApiError } from "./errors";
 
 interface SimpleFetchOptions extends RequestInit {
   parseJson?: boolean;
 }
 
-export async function apiFetch(
+function redirectToLogin() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  clearToken();
+  window.location.assign("/login");
+}
+
+export async function apiFetch<T = unknown>(
   url: string,
   options: SimpleFetchOptions = {}
-): Promise<any> {
-  const { headers, parseJson = true, ...rest } = options;
+): Promise<T> {
+  const { headers, parseJson = true, body, ...rest } = options;
+  const requestHeaders = new Headers(headers ?? {});
+  const token = getToken();
+
+  if (!(body instanceof FormData) && !requestHeaders.has("Content-Type")) {
+    requestHeaders.set("Content-Type", "application/json");
+  }
+
+  if (token && !requestHeaders.has("Authorization")) {
+    requestHeaders.set("Authorization", `Bearer ${token}`);
+  }
 
   let response: Response;
 
   try {
     response = await fetch(url, {
       ...rest,
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
+      body,
+      headers: requestHeaders,
       cache: "no-store",
     });
   } catch (err) {
     throw new ApiError("Erro de rede", 0, err);
   }
 
-  let data: any = null;
+  const text = await response.text();
+  let data: unknown = null;
 
   try {
-    const text = await response.text();
     data = text ? JSON.parse(text) : null;
   } catch {
-    data = null;
+    data = text || null;
   }
 
   if (!response.ok) {
-    throw new ApiError(`Erro HTTP ${response.status}`, response.status, data);
+    if (response.status === 401 || response.status === 403) {
+      redirectToLogin();
+    }
+
+    throw new ApiError(
+      extractApiMessage(data) ?? `Erro HTTP ${response.status}`,
+      response.status,
+      data
+    );
   }
 
-  return parseJson ? data : undefined;
+  return (parseJson ? data : undefined) as T;
 }

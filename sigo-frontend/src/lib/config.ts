@@ -7,3 +7,7 @@ export function buildBackendUrl(path: string) {
 
   return `${BACKEND_API_BASE_URL}/${cleanedPath}`;
 }
+
+export function buildServerBackendUrl(path: string) {
+  return buildBackendUrl(path);
+}

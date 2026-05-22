@@ -1,4 +1,4 @@
-import { Agent } from "undici";
+import { Agent, type Dispatcher } from "undici";
 import { buildServerBackendUrl } from "@/lib/config";
 
 const insecureLocalAgent = new Agent({
@@ -24,7 +24,9 @@ async function proxyRequest(
   const body =
     method === "GET" || method === "HEAD" ? undefined : await request.arrayBuffer();
 
-  const response = await fetch(targetUrl, {
+  type NodeFetchInit = RequestInit & { dispatcher?: Dispatcher };
+
+  const init: NodeFetchInit = {
     method,
     headers: forwardedHeaders,
     body,
@@ -33,7 +35,9 @@ async function proxyRequest(
       targetUrl.protocol === "https:" && targetUrl.hostname === "localhost"
         ? insecureLocalAgent
         : undefined,
-  });
+  };
+
+  const response = await fetch(targetUrl, init);
 
   const responseHeaders = new Headers(response.headers);
   responseHeaders.delete("content-encoding");
